@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>মেডিকেল সাপোর্ট - বাংলাদেশ</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #007bff;
+            --secondary-color: #0056b3;
+            --light-bg: #f4f7f6;
+            --text-color: #333;
+        }
+
+        body {
+            font-family: 'SolaimanLipi', Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--light-bg);
+            color: var(--text-color);
+        }
+
+        /* হেডার ডিজাইন */
+        header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        header h1 { margin: 0; font-size: 24px; }
+        
+        nav button {
+            background: white;
+            color: var(--primary-color);
+            border: none;
+            padding: 8px 15px;
+            cursor: pointer;
+            border-radius: 5px;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+
+        nav button:hover { background: #e2e6ea; }
+
+        /* ফ্ল্যাশ স্ক্রিন (বিজ্ঞাপন) */
+        #flash-screen {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.9);
+            z-index: 9999;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            color: white;
+        }
+        
+        #flash-content {
+            text-align: center;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            color: black;
+            max-width: 80%;
+        }
+
+        #flash-content img { max-width: 100%; height: auto; max-height: 300px; }
+        .close-ad {
+            margin-top: 15px;
+            padding: 10px 20px;
+            background: red;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        /* কন্টেইনার */
+        .container { padding: 20px; max-width: 1200px; margin: 0 auto; }
+
+        /* ব্যানার */
+        #banner-section {
+            background-image: url('https://via.placeholder.com/1200x400?text=Medical+Support+Banner');
+            background-size: cover;
+            background-position: center;
+            height: 300px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            text-shadow: 2px 2px 4px #000;
+            margin-bottom: 30px;
+        }
+
+        /* ডাক্তার লিস্ট গ্রিড */
+        .doctor-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .doctor-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            border-left: 5px solid var(--primary-color);
+        }
+
+        .doctor-card h3 { margin-top: 0; color: var(--secondary-color); }
+        .doctor-card p { margin: 5px 0; font-size: 14px; }
+        .btn-call {
+            display: block;
+            background: green;
+            color: white;
+            text-align: center;
+            padding: 10px;
+            text-decoration: none;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+
+        /* ফর্ম ডিজাইন (এডমিন ও ইউজার) */
+        .panel {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            max-width: 600px;
+            margin: 0 auto;
+            display: none; /* ডিফল্টভাবে লুকানো */
+        }
+
+        .active-panel { display: block; }
+
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: bold; }
+        .form-group input, .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            box-sizing: border-box; 
+        }
+
+        .submit-btn {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            width: 100%;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .section-title { text-align: center; margin-bottom: 20px; color: var(--secondary-color); }
+
+        /* রেস্পন্সিভ */
+        @media (max-width: 768px) {
+            .doctor-grid { grid-template-columns: 1fr; }
+            header { flex-direction: column; gap: 10px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="flash-screen">
+        <div id="flash-content">
+            <h2 id="ad-title-display">স্পেশাল অফার!</h2>
+            <img id="ad-image-display" src="https://via.placeholder.com/400x300?text=Advertisement" alt="Ad">
+            <p id="ad-desc-display">আমাদের প্রিমিয়াম সার্ভিসে ৫০% ছাড়!</p>
+            <button class="close-ad" onclick="closeFlashScreen()">বন্ধ করুন (<span id="timer">5</span>)</button>
+        </div>
+    </div>
+
+    <header>
+        <h1><i class="fas fa-user-md"></i> মেডিকেল সাপোর্ট</h1>
+        <nav>
+            <button onclick="showSection('home')">হোম</button>
+            <button onclick="showSection('add-doctor')">ডাক্তার যোগ করুন</button>
+            <button onclick="showSection('admin')">এডমিন প্যানেল</button>
+        </nav>
+    </header>
+
+    <div class="container">
+        
+        <div id="home-section">
+            <div id="banner-section">
+                <h1 id="banner-text-display">বাংলাদেশের সেরা ডাক্তারদের খুঁজুন</h1>
+            </div>
+
+            <h2 class="section-title">বিশেষজ্ঞ ডাক্তারদের তালিকা</h2>
+            <div class="doctor-grid" id="doctor-list">
+                </div>
+        </div>
+
+        <div id="add-doctor-panel" class="panel">
+            <h2 class="section-title">নতুন ডাক্তার নিবন্ধন করুন</h2>
+            <form id="doctorForm">
+                <div class="form-group">
+                    <label>ডাক্তারের নাম:</label>
+                    <input type="text" id="docName" placeholder="উদাঃ ডা. আব্দুল্লাহ" required>
+                </div>
+                <div class="form-group">
+                    <label>পদবি ও স্পেশালিটি:</label>
+                    <input type="text" id="docDegree" placeholder="উদাঃ এমবিবিএস, এফসিপিএস (মেডিসিন)" required>
+                </div>
+                <div class="form-group">
+                    <label>চেম্বারের ঠিকানা:</label>
+                    <textarea id="docAddress" rows="3" placeholder="উদাঃ ল্যাবএইড হসপিটাল, ধানমন্ডি" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label>সিরিয়াল দেওয়ার মোবাইল নাম্বার:</label>
+                    <input type="text" id="docPhone" placeholder="017xxxxxxxx" required>
+                </div>
+                <button type="submit" class="submit-btn">তথ্যাবলি জমা দিন</button>
+            </form>
+        </div>
+
+        <div id="admin-panel" class="panel">
+            <h2 class="section-title">এডমিন ড্যাশবোর্ড (সেটিংস)</h2>
+            <div style="text-align: center; margin-bottom: 20px; color: red; font-size: 12px;">(পাসওয়ার্ড: admin123)</div>
+            
+            <div id="admin-login">
+                <input type="password" id="adminPass" placeholder="পাসওয়ার্ড দিন" style="width: 70%; padding: 10px;">
+                <button onclick="checkAdmin()" style="padding: 10px;">লগিন</button>
+            </div>
+
+            <div id="admin-content" style="display: none;">
+                <h3><i class="fas fa-cog"></i> পেজ ও ব্যানার সেটআপ</h3>
+                <div class="form-group">
+                    <label>ব্যানার টেক্সট:</label>
+                    <input type="text" id="setupBannerText" placeholder="নতুন ব্যানার টেক্সট লিখুন">
+                </div>
+                <div class="form-group">
+                    <label>ব্যানার ইমেজের লিংক:</label>
+                    <input type="text" id="setupBannerImg" placeholder="ইমেজের URL দিন">
+                </div>
+                <button onclick="savePageSettings()" class="submit-btn" style="background: #28a745; margin-bottom: 20px;">সেটিংস সেভ করুন</button>
+
+                <hr>
+
+                <h3><i class="fas fa-ad"></i> ফ্ল্যাশ স্ক্রিন বিজ্ঞাপন সেটআপ</h3>
+                <div class="form-group">
+                    <label>বিজ্ঞাপনের শিরোনাম:</label>
+                    <input type="text" id="setupAdTitle" placeholder="অফারের নাম">
+                </div>
+                <div class="form-group">
+                    <label>বিজ্ঞাপনের ছবি (URL):</label>
+                    <input type="text" id="setupAdImg" placeholder="ছবির লিংক">
+                </div>
+                <button onclick="saveAdSettings()" class="submit-btn" style="background: #ffc107; color: black;">বিজ্ঞাপন আপডেট করুন</button>
+                
+                <hr>
+                <button onclick="clearAllData()" style="background: red; color: white; padding: 10px; border: none; width: 100%; margin-top: 20px;">সকল ডাটা রিসেট করুন</button>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // --- ডাটা লোড ও ভেরিয়েবল ---
+        
+        // ডিফল্ট ডাটা যদি লোকাল স্টোরেজে কিছু না থাকে
+        const defaultDoctors = [
+            { name: "ডা. রফিকুল ইসলাম", degree: "এমবিবিএস, এফসিপিএস (কার্ডিওলজি)", address: "পপুলার ডায়াগনস্টিক, ঢাকা", phone: "01711000000" },
+            { name: "ডা. নুসরাত জাহান", degree: "এমবিবিএস, ডিজিও (গাইনি)", address: "ইবনে সিনা হাসপাতাল, সিলেট", phone: "01911000000" }
+        ];
+
+        // --- পেজ লোড হলে যা যা হবে ---
+        window.onload = function() {
+            loadDoctors();
+            loadSettings();
+            startFlashTimer();
+        };
+
+        // --- ফ্ল্যাশ স্ক্রিন লজিক ---
+        function startFlashTimer() {
+            let timeLeft = 5;
+            const timerElem = document.getElementById('timer');
+            const interval = setInterval(() => {
+                timeLeft--;
+                timerElem.innerText = timeLeft;
+                if (timeLeft <= 0) {
+                    clearInterval(interval);
+                    // চাইলে অটোমেটিক বন্ধ করতে পারেন, তবে এখানে ম্যানুয়াল রাখা হয়েছে
+                    timerElem.innerText = "Close";
+                }
+            }, 1000);
+        }
+
+        function closeFlashScreen() {
+            document.getElementById('flash-screen').style.display = 'none';
+        }
+
+        // --- নেভিগেশন লজিক ---
+        function showSection(section) {
+            // সব সেকশন লুকাও
+            document.getElementById('home-section').style.display = 'none';
+            document.getElementById('add-doctor-panel').style.display = 'none';
+            document.getElementById('admin-panel').style.display = 'none';
+
+            // নির্দিষ্ট সেকশন দেখাও
+            if (section === 'home') document.getElementById('home-section').style.display = 'block';
+            if (section === 'add-doctor') document.getElementById('add-doctor-panel').style.display = 'block';
+            if (section === 'admin') document.getElementById('admin-panel').style.display = 'block';
+        }
+
+        // --- ডাক্তার যোগ করার লজিক (User Panel) ---
+        document.getElementById('doctorForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const newDoctor = {
+                name: document.getElementById('docName').value,
+                degree: document.getElementById('docDegree').value,
+                address: document.getElementById('docAddress').value,
+                phone: document.getElementById('docPhone').value
+            };
+
+            // লোকাল স্টোরেজ থেকে ডাটা আনা
+            let doctors = JSON.parse(localStorage.getItem('doctors')) || defaultDoctors;
+            doctors.push(newDoctor);
+            
+            // ডাটা সেভ করা
+            localStorage.setItem('doctors', JSON.stringify(doctors));
+
+            alert('ডাক্তারের তথ্য সফলভাবে যুক্ত হয়েছে!');
+            this.reset();
+            loadDoctors(); // লিস্ট আপডেট
+            showSection('home'); // হোমে ফেরত
+        });
+
+        // --- ডাক্তার লিস্ট দেখানো (Home) ---
+        function loadDoctors() {
+            const listContainer = document.getElementById('doctor-list');
+            let doctors = JSON.parse(localStorage.getItem('doctors')) || defaultDoctors;
+            
+            listContainer.innerHTML = ''; // আগের লিস্ট ক্লিয়ার
+
+            doctors.forEach(doc => {
+                const card = `
+                    <div class="doctor-card">
+                        <h3>${doc.name}</h3>
+                        <p><strong><i class="fas fa-user-graduate"></i></strong> ${doc.degree}</p>
+                        <p><strong><i class="fas fa-map-marker-alt"></i></strong> ${doc.address}</p>
+                        <a href="tel:${doc.phone}" class="btn-call"><i class="fas fa-phone-alt"></i> সিরিয়াল নিন: ${doc.phone}</a>
+                    </div>
+                `;
+                listContainer.innerHTML += card;
+            });
+        }
+
+        // --- এডমিন প্যানেল লজিক ---
+        function checkAdmin() {
+            const pass = document.getElementById('adminPass').value;
+            if(pass === "admin123") {
+                document.getElementById('admin-login').style.display = 'none';
+                document.getElementById('admin-content').style.display = 'block';
+            } else {
+                alert("ভুল পাসওয়ার্ড!");
+            }
+        }
+
+        function savePageSettings() {
+            const bannerText = document.getElementById('setupBannerText').value;
+            const bannerImg = document.getElementById('setupBannerImg').value;
+
+            if(bannerText) localStorage.setItem('bannerText', bannerText);
+            if(bannerImg) localStorage.setItem('bannerImg', bannerImg);
+
+            alert("পেজ সেটিংস সেভ হয়েছে!");
+            loadSettings();
+        }
+
+        function saveAdSettings() {
+            const adTitle = document.getElementById('setupAdTitle').value;
+            const adImg = document.getElementById('setupAdImg').value;
+
+            if(adTitle) localStorage.setItem('adTitle', adTitle);
+            if(adImg) localStorage.setItem('adImg', adImg);
+
+            alert("বিজ্ঞাপন আপডেট হয়েছে! পেজ রিফ্রেশ দিলে দেখতে পাবেন।");
+        }
+
+        function loadSettings() {
+            // ব্যানার লোড
+            const bText = localStorage.getItem('bannerText');
+            const bImg = localStorage.getItem('bannerImg');
+            
+            if(bText) document.getElementById('banner-text-display').innerText = bText;
+            if(bImg) document.getElementById('banner-section').style.backgroundImage = `url('${bImg}')`;
+
+            // বিজ্ঞাপন লোড
+            const adTitle = localStorage.getItem('adTitle');
+            const adImg = localStorage.getItem('adImg');
+
+            if(adTitle) document.getElementById('ad-title-display').innerText = adTitle;
+            if(adImg) document.getElementById('ad-image-display').src = adImg;
+        }
+
+        function clearAllData() {
+            if(confirm("আপনি কি নিশ্চিত? সকল ডাক্তারের তথ্য মুছে যাবে!")) {
+                localStorage.clear();
+                location.reload();
+            }
+        }
+
+    </script>
+</body>
+</html>
