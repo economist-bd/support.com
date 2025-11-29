@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>মেডিকেল সাপোর্ট - বাংলাদেশ</title>
+    <!-- Tailwind CSS & FontAwesome -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Hind Siliguri', sans-serif; background-color: #f0fdf4; }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #16a34a; border-radius: 4px; }
+
+        /* Marquee Animation */
+        .marquee-container { overflow: hidden; white-space: nowrap; background: #dc2626; color: white; padding: 8px 0; }
+        .marquee-content { display: inline-block; padding-left: 100%; animation: marquee 20s linear infinite; }
+        @keyframes marquee { 0% { transform: translate(0, 0); } 100% { transform: translate(-100%, 0); } }
+
+        /* Slider */
+        .slider-container { position: relative; width: 100%; height: 350px; overflow: hidden; }
+        .slide { position: absolute; width: 100%; height: 100%; transition: opacity 1s ease-in-out; opacity: 0; }
+        .slide.active { opacity: 1; }
+        .slide img { width: 100%; height: 100%; object-fit: cover; }
+
+        /* Loader */
+        .loader { border: 4px solid #f3f3f3; border-top: 4px solid #16a34a; border-radius: 50%; width: 30px; height: 30px; animation: spin 1s linear infinite; margin: 20px auto; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body class="text-gray-800">
+
+    <!-- Flash Screen Ad (Modal) -->
+    <div id="flashModal" class="fixed inset-0 bg-black bg-opacity-90 z-50 hidden flex items-center justify-center">
+        <div class="bg-white p-2 rounded-lg max-w-lg w-full relative">
+            <button onclick="closeFlash()" class="absolute -top-4 -right-4 bg-red-600 text-white rounded-full w-8 h-8 font-bold">X</button>
+            <div id="flashContent" class="text-center">
+                <!-- Ad content injected here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Header -->
+    <header class="bg-green-700 text-white shadow-lg sticky top-0 z-40">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center gap-2 cursor-pointer" onclick="renderHome()">
+                <i class="fas fa-user-md text-3xl"></i>
+                <div>
+                    <h1 class="text-2xl font-bold leading-none">মেডিকেল সাপোর্ট</h1>
+                    <small class="text-xs text-green-200">সার্বক্ষণিক স্বাস্থ্য সেবা</small>
+                </div>
+            </div>
+            
+            <!-- Mobile Menu Button -->
+            <button onclick="toggleMobileMenu()" class="md:hidden text-2xl"><i class="fas fa-bars"></i></button>
+
+            <!-- Desktop Nav -->
+            <nav class="hidden md:flex gap-6 font-medium">
+                <button onclick="renderHome()" class="hover:text-green-200"><i class="fas fa-home"></i> হোম</button>
+                <button onclick="renderAddDoctor()" class="hover:text-green-200"><i class="fas fa-plus-circle"></i> ডাক্তার যোগ করুন</button>
+                <button onclick="openAdminLogin()" class="bg-white text-green-700 px-4 py-1 rounded-full hover:bg-green-100 transition"><i class="fas fa-cog"></i> এডমিন</button>
+            </nav>
+        </div>
+
+        <!-- Mobile Nav -->
+        <div id="mobileMenu" class="hidden md:hidden bg-green-800 p-4 space-y-3">
+            <button onclick="renderHome()" class="block w-full text-left text-white border-b border-green-700 pb-2">হোম</button>
+            <button onclick="renderAddDoctor()" class="block w-full text-left text-white border-b border-green-700 pb-2">ডাক্তার যোগ করুন</button>
+            <button onclick="openAdminLogin()" class="block w-full text-left text-white">এডমিন প্যানেল</button>
+        </div>
+    </header>
+
+    <!-- Scrolling News Ticker -->
+    <div class="marquee-container shadow-md">
+        <div class="marquee-content font-bold text-lg" id="tickerText">
+            লোড হচ্ছে...
+        </div>
+    </div>
+
+    <!-- Main Content Area -->
+    <main id="app" class="min-h-screen pb-10">
+        <!-- Views will be injected here via JS -->
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-8 mt-10">
+        <div class="container mx-auto px-4 text-center">
+            <p>&copy; ২০২৫ মেডিকেল সাপোর্ট বিডি। সর্বস্বত্ব সংরক্ষিত।</p>
+            <p class="text-sm text-gray-400 mt-2">জরুরি প্রয়োজনে: ৯৯৯</p>
+        </div>
+    </footer>
+
+    <!-- Firebase SDKs -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
+        import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+
+        // Firebase Config
+        const firebaseConfig = {
+            apiKey: "AIzaSyBHFsTRQT1eopfz8NG5ux__0QKgKCnoXOE",
+            authDomain: "support-94add.firebaseapp.com",
+            projectId: "support-94add",
+            storageBucket: "support-94add.firebasestorage.app",
+            messagingSenderId: "442252148032",
+            appId: "1:442252148032:web:8e9ee30923e31b06368ea5",
+            measurementId: "G-H4B43HMK43"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // State Management
+        let doctorsData = [];
+        let bannersData = [];
+        let isAdmin = false; // Simple session variable
+
+        // District List for BD
+        const districts = ["ঢাকা", "কিশোরগঞ্জ", "চট্টগ্রাম", "সিলেট", "রাজশাহী", "খুলনা", "বরিশাল", "রংপুর", "ময়মনসিংহ", "কুমিল্লা", "গাজীপুর", "নারায়ণগঞ্জ", "বগুড়া", "ফেনী", "পাবনা"];
+
+        // --- DOM Elements & Global Functions ---
+        window.toggleMobileMenu = () => {
+            document.getElementById('mobileMenu').classList.toggle('hidden');
+        };
+
+        window.closeFlash = () => {
+            document.getElementById('flashModal').classList.add('hidden');
+        };
+
+        // --- Core Rendering Logic ---
+
+        // 1. HOME PAGE
+        window.renderHome = async () => {
+            const appDiv = document.getElementById('app');
+            appDiv.innerHTML = '<div class="loader"></div>';
+
+            // Fetch Data in Parallel
+            await Promise.all([fetchBanners(), fetchDoctors(), fetchSettings()]);
+
+            let bannerHTML = '';
+            if(bannersData.length > 0) {
+                bannerHTML = `
+                    <div class="slider-container shadow-lg mb-6">
+                        ${bannersData.map((b, index) => `
+                            <div class="slide ${index === 0 ? 'active' : ''}">
+                                <img src="${b.url}" alt="${b.title || 'Banner'}">
+                                <div class="absolute bottom-0 bg-black bg-opacity-50 text-white w-full p-2 text-center text-xl font-bold">${b.title}</div>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+                // Start Slider Interval
+                startSlider();
+            } else {
+                bannerHTML = `<div class="bg-gray-200 h-64 flex items-center justify-center text-gray-500">কোনো ব্যানার নেই</div>`;
+            }
+
+            const districtOptions = districts.map(d => `<option value="${d}">${d}</option>`).join('');
+
+            appDiv.innerHTML = `
+                ${bannerHTML}
+                
+                <div class="container mx-auto px-4 -mt-2">
+                    <!-- Search Filter -->
+                    <div class="bg-white p-6 rounded-lg shadow-md -mt-10 relative z-10 border-t-4 border-green-600">
+                        <h2 class="text-xl font-bold mb-4 text-center text-green-700"><i class="fas fa-search"></i> ডাক্তার খুঁজুন</h2>
+                        <div class="flex flex-col md:flex-row gap-4">
+                            <select id="searchDistrict" class="w-full p-3 border rounded focus:outline-none focus:border-green-500 bg-gray-50" onchange="filterDoctors()">
+                                <option value="">সকল জেলা</option>
+                                ${districtOptions}
+                            </select>
+                            <input type="text" id="searchName" placeholder="ডাক্তারের নাম বা পদবি লিখুন..." class="w-full p-3 border rounded focus:outline-none focus:border-green-500" onkeyup="filterDoctors()">
+                        </div>
+                    </div>
+
+                    <!-- Doctors Grid -->
+                    <h2 class="text-2xl font-bold mt-10 mb-6 text-gray-700 border-l-4 border-green-600 pl-3">সম্মানিত ডাক্তারগণ</h2>
+                    <div id="doctorsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <!-- Doctors injected here -->
+                    </div>
+                </div>
+            `;
+            filterDoctors(); // Initial render of list
+        };
+
+        // Slider Logic
+        let slideIndex = 0;
+        function startSlider() {
+            if(bannersData.length < 2) return;
+            setInterval(() => {
+                const slides = document.querySelectorAll('.slide');
+                if(slides.length === 0) return;
+                slides[slideIndex].classList.remove('active');
+                slideIndex = (slideIndex + 1) % slides.length;
+                slides[slideIndex].classList.add('active');
+            }, 4000);
+        }
+
+        // Filter Function
+        window.filterDoctors = () => {
+            const district = document.getElementById('searchDistrict').value;
+            const text = document.getElementById('searchName').value.toLowerCase();
+            const grid = document.getElementById('doctorsGrid');
+
+            const filtered = doctorsData.filter(doc => {
+                const matchDistrict = district ? doc.district === district : true;
+                const matchText = (doc.name.toLowerCase().includes(text) || doc.degree.toLowerCase().includes(text));
+                return matchDistrict && matchText;
+            });
+
+            if(filtered.length === 0) {
+                grid.innerHTML = `<div class="col-span-full text-center py-10 text-gray-500">কোনো তথ্য পাওয়া যায়নি</div>`;
+                return;
+            }
+
+            grid.innerHTML = filtered.map(doc => `
+                <div class="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition border border-gray-100 flex flex-col">
+                    <div class="bg-green-50 p-4 flex items-center gap-4">
+                        <div class="w-16 h-16 bg-green-200 rounded-full flex items-center justify-center text-green-700 text-2xl">
+                            <i class="fas fa-user-md"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-lg text-gray-800">${doc.name}</h3>
+                            <span class="text-sm text-green-600 font-semibold bg-green-100 px-2 py-0.5 rounded">${doc.district}</span>
+                        </div>
+                    </div>
+                    <div class="p-4 flex-grow space-y-2">
+                        <p class="text-sm text-gray-600"><i class="fas fa-graduation-cap w-5 text-center"></i> ${doc.degree}</p>
+                        <p class="text-sm text-gray-600"><i class="fas fa-map-marker-alt w-5 text-center"></i> ${doc.chamber}</p>
+                    </div>
+                    <div class="p-4 bg-gray-50 border-t flex justify-between items-center">
+                        <a href="tel:${doc.phone}" class="bg-green-600 text-white px-4 py-2 rounded-full text-sm font-bold hover:bg-green-700 flex items-center gap-2">
+                            <i class="fas fa-phone-alt"></i> সিরিয়াল দিন
+                        </a>
+                        ${isAdmin ? `<button onclick="editDoctor('${doc.id}')" class="text-blue-500 hover:text-blue-700"><i class="fas fa-edit"></i></button>` : ''}
+                    </div>
+                </div>
+            `).join('');
+        };
+
+        // 2. ADD DOCTOR PAGE (USER PANEL)
+        window.renderAddDoctor = () => {
+            const appDiv = document.getElementById('app');
+            const districtOptions = districts.map(d => `<option value="${d}">${d}</option>`).join('');
+
+            appDiv.innerHTML = `
+                <div class="container mx-auto px-4 py-10">
+                    <div class="max-w-2xl mx-auto bg-white p-8 rounded-lg shadow-lg">
+                        <h2 class="text-2xl font-bold mb-6 text-center text-green-700 border-b pb-2">নতুন ডাক্তার যোগ করুন</h2>
+                        <form id="addDoctorForm" class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-bold mb-1">ডাক্তারের নাম</label>
+                                <input type="text" id="docName" required class="w-full p-3 border rounded focus:border-green-500" placeholder="উদাঃ ডা. রফিকুল ইসলাম">
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-bold mb-1">জেলা</label>
+                                    <select id="docDistrict" required class="w-full p-3 border rounded focus:border-green-500 bg-white">
+                                        <option value="">জেলা নির্বাচন করুন</option>
+                                        ${districtOptions}
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-bold mb-1">মোবাইল নাম্বার (সিরিয়াল)</label>
+                                    <input type="text" id="docPhone" required class="w-full p-3 border rounded focus:border-green-500" placeholder="017xxxxxxxx">
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-bold mb-1">পদবি ও স্পেশালিটি</label>
+                                <input type="text" id="docDegree" required class="w-full p-3 border rounded focus:border-green-500" placeholder="উদাঃ এমবিবিএস, এফসিপিএস (মেডিসিন)">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-bold mb-1">চেম্বারের ঠিকানা</label>
+                                <textarea id="docChamber" required rows="3" class="w-full p-3 border rounded focus:border-green-500" placeholder="হাসপাতাল/ক্লিনিকের নাম ও ঠিকানা..."></textarea>
+                            </div>
+                            <button type="submit" class="w-full bg-green-600 text-white py-3 rounded-lg font-bold text-lg hover:bg-green-700 transition">তথ্য জমা দিন</button>
+                        </form>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('addDoctorForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const btn = e.target.querySelector('button');
+                const originalText = btn.innerText;
+                btn.innerText = 'জমা হচ্ছে...';
+                btn.disabled = true;
+
+                try {
+                    await addDoc(collection(db, "doctors"), {
+                        name: document.getElementById('docName').value,
+                        district: document.getElementById('docDistrict').value,
+                        phone: document.getElementById('docPhone').value,
+                        degree: document.getElementById('docDegree').value,
+                        chamber: document.getElementById('docChamber').value,
+                        createdAt: new Date()
+                    });
+                    alert('ডাক্তারের তথ্য সফলভাবে যুক্ত হয়েছে!');
+                    renderHome();
+                } catch (error) {
+                    console.error("Error:", error);
+                    alert('কোথাও সমস্যা হয়েছে। আবার চেষ্টা করুন।');
+                    btn.innerText = originalText;
+                    btn.disabled = false;
+                }
+            });
+        };
+
+        // 3. ADMIN PANEL
+        window.openAdminLogin = () => {
+            if(isAdmin) {
+                renderAdminPanel();
+                return;
+            }
+            const appDiv = document.getElementById('app');
+            appDiv.innerHTML = `
+                <div class="min-h-screen flex items-center justify-center bg-gray-100 p-4">
+                    <div class="bg-white p-8 rounded-lg shadow-xl w-full max-w-md">
+                        <h2 class="text-2xl font-bold text-center mb-6 text-red-600">এডমিন লগিন</h2>
+                        <div class="space-y-4">
+                            <input type="email" id="adminEmail" placeholder="ইমেইল (himel...)" class="w-full p-3 border rounded">
+                            <input type="text" id="adminPhone" placeholder="মোবাইল (017...)" class="w-full p-3 border rounded">
+                            <button onclick="verifyAdmin()" class="w-full bg-red-600 text-white py-3 rounded font-bold hover:bg-red-700">লগিন</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        };
+
+        window.verifyAdmin = () => {
+            const e = document.getElementById('adminEmail').value.trim();
+            const p = document.getElementById('adminPhone').value.trim();
+
+            if(e === "himel452@gmail.com" && p === "01715247588") {
+                isAdmin = true;
+                renderAdminPanel();
+            } else {
+                alert("ভুল তথ্য! শুধুমাত্র এডমিন প্রবেশ করতে পারবেন।");
+            }
+        };
+
+        window.renderAdminPanel = async () => {
+            await Promise.all([fetchBanners(), fetchSettings()]); // Refresh data
+            
+            const appDiv = document.getElementById('app');
+            
+            // Settings Data (Assume single doc in 'settings' collection)
+            const tickerText = localStorage.getItem('tickerText') || "মেডিকেল সাপোর্টে আপনাকে স্বাগতম! প্রতি শুক্র ও শনি বার বিশেষজ্ঞ ডাক্তার বসেন।";
+            const flashAd = JSON.parse(localStorage.getItem('flashAd')) || { title: "বিজ্ঞাপন", image: "", active: false };
+
+            appDiv.innerHTML = `
+                <div class="container mx-auto px-4 py-8">
+                    <div class="flex justify-between items-center mb-8 border-b pb-4">
+                        <h1 class="text-3xl font-bold text-gray-800">এডমিন ড্যাশবোর্ড</h1>
+                        <button onclick="renderHome()" class="text-blue-600 underline">সাইটে ফিরে যান</button>
+                    </div>
+
+                    <!-- 1. Page Setup: Banner -->
+                    <div class="bg-white p-6 rounded-lg shadow mb-8">
+                        <h3 class="text-xl font-bold mb-4 text-purple-700">ব্যানার সেটআপ</h3>
+                        <div class="flex gap-2 mb-4">
+                            <input type="text" id="bannerUrl" placeholder="ব্যানার ইমেজের লিংক দিন" class="flex-1 p-2 border rounded">
+                            <input type="text" id="bannerTitle" placeholder="ব্যানার টাইটেল" class="flex-1 p-2 border rounded">
+                            <button onclick="addBanner()" class="bg-purple-600 text-white px-4 py-2 rounded">যোগ করুন</button>
+                        </div>
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                            ${bannersData.map(b => `
+                                <div class="relative group">
+                                    <img src="${b.url}" class="h-24 w-full object-cover rounded">
+                                    <button onclick="deleteBanner('${b.id}')" class="absolute top-1 right-1 bg-red-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs">X</button>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+
+                    <!-- 2. Scrolling Ticker -->
+                    <div class="bg-white p-6 rounded-lg shadow mb-8">
+                        <h3 class="text-xl font-bold mb-4 text-orange-700">শুক্র ও শনিবারের স্ক্রলিং নোটিশ</h3>
+                        <textarea id="adminTicker" class="w-full p-2 border rounded mb-2" rows="2">${tickerText}</textarea>
+                        <button onclick="saveTicker()" class="bg-orange-600 text-white px-4 py-2 rounded">আপডেট করুন</button>
+                    </div>
+
+                    <!-- 3. Flash Ad Setup -->
+                    <div class="bg-white p-6 rounded-lg shadow mb-8">
+                        <h3 class="text-xl font-bold mb-4 text-red-700">ফ্ল্যাশ স্ক্রিন বিজ্ঞাপন</h3>
+                        <div class="space-y-3">
+                            <input type="text" id="adTitle" value="${flashAd.title || ''}" placeholder="বিজ্ঞাপনের শিরোনাম" class="w-full p-2 border rounded">
+                            <input type="text" id="adImage" value="${flashAd.image || ''}" placeholder="বিজ্ঞাপনের ইমেজের লিংক" class="w-full p-2 border rounded">
+                            <div class="flex items-center gap-2">
+                                <input type="checkbox" id="adActive" ${flashAd.active ? 'checked' : ''} class="w-5 h-5">
+                                <label>বিজ্ঞাপন চালু রাখুন</label>
+                            </div>
+                            <button onclick="saveFlashAd()" class="bg-red-600 text-white px-4 py-2 rounded">সেভ করুন</button>
+                        </div>
+                    </div>
+
+                    <!-- 4. Doctors Management Link -->
+                    <div class="bg-white p-6 rounded-lg shadow">
+                        <h3 class="text-xl font-bold mb-4 text-green-700">ডাক্তার মেনেজমেন্ট</h3>
+                        <p class="mb-4 text-gray-600">ডাক্তারদের তথ্য এডিট বা ডিলিট করতে হোম পেজে যান, সেখানে এডমিন হিসেবে লগিন থাকা অবস্থায় প্রতিটি কার্ডে এডিট বাটন পাবেন।</p>
+                        <button onclick="renderHome()" class="bg-green-600 text-white px-4 py-2 rounded">ডাক্তার লিস্টে যান</button>
+                    </div>
+                </div>
+            `;
+        };
+
+        // --- Database Operations ---
+
+        // Fetch Functions
+        async function fetchDoctors() {
+            const q = query(collection(db, "doctors"), orderBy("createdAt", "desc"));
+            const querySnapshot = await getDocs(q);
+            doctorsData = [];
+            querySnapshot.forEach((doc) => {
+                doctorsData.push({ id: doc.id, ...doc.data() });
+            });
+        }
+
+        async function fetchBanners() {
+            const querySnapshot = await getDocs(collection(db, "banners"));
+            bannersData = [];
+            querySnapshot.forEach((doc) => {
+                bannersData.push({ id: doc.id, ...doc.data() });
+            });
+        }
+
+        async function fetchSettings() {
+            // For simplicity in this demo, Ticker and Ad are stored in LocalStorage or hardcoded fallback
+            // Ideally, these should be in a 'settings' collection in Firestore
+            const ticker = localStorage.getItem('tickerText');
+            if(ticker) document.getElementById('tickerText').innerText = ticker;
+
+            const flashAd = JSON.parse(localStorage.getItem('flashAd'));
+            if(flashAd && flashAd.active && !sessionStorage.getItem('adShown')) {
+                document.getElementById('flashContent').innerHTML = `
+                    <h2 class="text-xl font-bold mb-2 text-green-700">${flashAd.title}</h2>
+                    ${flashAd.image ? `<img src="${flashAd.image}" class="max-h-64 mx-auto mb-2 rounded">` : ''}
+                    <p class="text-sm text-gray-600">বিজ্ঞাপন</p>
+                `;
+                document.getElementById('flashModal').classList.remove('hidden');
+                sessionStorage.setItem('adShown', 'true');
+            }
+        }
+
+        // Admin Actions
+        window.addBanner = async () => {
+            const url = document.getElementById('bannerUrl').value;
+            const title = document.getElementById('bannerTitle').value;
+            if(!url) return alert('লিংক দিন');
+            await addDoc(collection(db, "banners"), { url, title });
+            alert('ব্যানার যুক্ত হয়েছে');
+            renderAdminPanel();
+        };
+
+        window.deleteBanner = async (id) => {
+            if(confirm('ব্যানার ডিলিট করবেন?')) {
+                await deleteDoc(doc(db, "banners", id));
+                renderAdminPanel();
+            }
+        };
+
+        window.saveTicker = () => {
+            const text = document.getElementById('adminTicker').value;
+            localStorage.setItem('tickerText', text);
+            alert('নিউজ আপডেট হয়েছে!');
+        };
+
+        window.saveFlashAd = () => {
+            const adData = {
+                title: document.getElementById('adTitle').value,
+                image: document.getElementById('adImage').value,
+                active: document.getElementById('adActive').checked
+            };
+            localStorage.setItem('flashAd', JSON.stringify(adData));
+            alert('বিজ্ঞাপন সেটিংস আপডেট হয়েছে!');
+        };
+
+        // Doctor Edit Logic
+        window.editDoctor = async (id) => {
+            const docData = doctorsData.find(d => d.id === id);
+            const newName = prompt("ডাক্তারের নাম এডিট করুন:", docData.name);
+            const newPhone = prompt("মোবাইল এডিট করুন:", docData.phone);
+            
+            if (newName && newPhone) {
+                await updateDoc(doc(db, "doctors", id), {
+                    name: newName,
+                    phone: newPhone
+                });
+                alert("আপডেট হয়েছে!");
+                renderHome(); // Refresh
+            }
+        };
+
+        // Initial Load
+        renderHome();
+
+    </script>
+</body>
+</html>
