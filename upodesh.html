@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="bn">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>১০০টি হিতোপদেশ — HTML কার্ড</title>
+  <style>
+    :root{--bg:#0f1724;--card:#0b1220;--accent:#06b6d4;--text:#e6eef6}
+    *{box-sizing:border-box}
+    body{font-family:kalpurush, 'Noto Sans Bengali', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; margin:0; background:linear-gradient(180deg,#071026 0%, #071633 100%); color:var(--text);padding:32px}
+    .container{max-width:1100px;margin:0 auto}
+    header{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:20px}
+    h1{font-size:22px;margin:0}
+    p.lead{margin:0;opacity:0.8}
+    .controls{display:flex;gap:8px;align-items:center}
+    input.search{padding:10px 12px;border-radius:10px;border:1px solid rgba(255,255,255,0.06);background:rgba(255,255,255,0.02);color:var(--text);min-width:220px}
+    button{padding:10px 12px;border-radius:10px;border:0;background:var(--accent);color:#032;cursor:pointer}
+    .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px;margin-top:24px}
+    .card{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));padding:16px;border-radius:12px;box-shadow:0 6px 18px rgba(2,6,23,0.6);border:1px solid rgba(255,255,255,0.03);min-height:84px;display:flex;flex-direction:column;justify-content:space-between}
+    .num{font-weight:700;color:var(--accent);font-size:14px}
+    .text{font-size:16px;margin-top:8px;line-height:1.35}
+    footer{margin-top:28px;text-align:center;color:rgba(230,238,246,0.6);font-size:13px}
+    @media (max-width:420px){body{padding:16px} .controls{flex-direction:column;align-items:stretch} input.search{width:100%}}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div>
+        <h1>১০০টি হিতোপদেশ</h1>
+        <p class="lead">সাময়িক অনুপ্রেরণা ও দৈনন্দিন জীবনের সহজ কৌশলসমূহ</p>
+      </div>
+      <div class="controls">
+        <input id="search" class="search" placeholder="খুঁজুন (উদাহরণ: ধৈর্য, সৎ)" />
+        <button id="reset">রিসেট</button>
+      </div>
+    </header>
+
+    <main>
+      <section id="cards" class="grid">
+        <!-- Cards injected by JS -->
+      </section>
+    </main>
+
+    <footer>
+      তৈরি করা: আপনার অনুরোধ অনুযায়ী — এই HTML ফাইলটি কপি করে আপনার ওয়েবসাইট বা ব্লগে ব্যবহার করতে পারবেন।
+    </footer>
+  </div>
+
+  <script>
+    const advices = [
+      "সময়কে শ্রদ্ধা করো",
+      "সৎ হও",
+      "পরিশ্রমে বিশ্বাস রাখো",
+      "কৃতজ্ঞতা জীবনে আন",
+      "ধৈর্য ধারন করো",
+      "ছোট্ট পদক্ষেপও বড় পরিবর্তন নিয়ে আসে",
+      "অধিকার ভুলে দায় সওয়া করো",
+      "ভাল সম্পর্ক রক্ষা করো",
+      "নিজেকে শিক্ষা দাও",
+      "শোনো বেশি, বলো কম",
+      "অল্পেই সন্তুষ্ট হও",
+      "নিয়মিত বিশ্রাম নাও",
+      "স্বাস্থ্যই বড় সম্পদ",
+      "উৎসাহ দিতে ভয় পাওও না",
+      "ভুল স্বীকার করো ও শিখো",
+      "অনুশীলন সফলতার মূল",
+      "আচরণে নম্র হও",
+      "দয়া দেখাও",
+      "পরিকল্পনা করো কিন্তু প্রস্তুত থাকো",
+      "খরচে সংযম রাখো",
+      "হাহাকার নয়, সমাধান খুঁজো",
+      "সম্মান জয় করো",
+      "সময়মত কাজ শুরু করো",
+      "প্রতিশ্রুতি রাখো",
+      "সহায়তা চাও—প্রয়োজনে",
+      "পরিস্কার থাকো",
+      "স্বপ্ন রাখো কিন্তু বাস্তব থাকো",
+      "নিয়মিত পড়াশোনা করো",
+      "পরিবেশ রক্ষণ করো",
+      "কঠোর সময়ে হাসতে শেখো",
+      "নির্ধারিত লক্ষ্য রাখো",
+      "শ্রদ্ধা সবার সাথে রাখো",
+      "অপপ্রচারে ভুল করো না",
+      "নেতিবাচকতা ছেড়ে দাও",
+      "নতুন কিছু শিখতে চেষ্টা করো",
+      "প্রশ্ন করতে ভয় পাওও না",
+      "আত্মসমালোচনা করো",
+      "সহনশীল হও",
+      "উদ্ভাবনী হোন",
+      "ভাল অভ্যাস গঠন করো",
+      "অল্প কথায় বড় অর্থ বলো",
+      "বিকল্প পরিকল্পনা তৈরি করো",
+      "প্রতিদিবস কৃত্য হও",
+      "বাঁচাতে শিখো",
+      "নিষ্ঠা রাখো",
+      "অনুকরণ নয়, অনুপ্রেরণা দাও",
+      "নিজেকে সময় দিন",
+      "সৎ উপার্জন করো",
+      "আত্মমর্যাদা বজায় রাখো",
+      "মানুষকে শুনতে শেখো",
+      "অপরের ভুল ক্ষমা করো",
+      "আলোর সন্ধান করো",
+      "ধৈর্যের মূল্য জানো",
+      "তথ্যে বিশ্বাস করো",
+      "ছোট জয় উদযাপন করো",
+      "প্রকৃতিকে সময় দাও",
+      "শৃঙ্খলা জীবনকে সহজ করে",
+      "সীমা নির্ধারণ করো",
+      "টাকা নয়, সময় বড়",
+      "পরিস্থিতি অনুকূলে নিয়ে আসো",
+      "কমিটমেন্টে সতর্ক হও",
+      "সৃজনশীলতায় নিজেকে ঢালাও",
+      "নতুন চ্যালেঞ্জ গ্রহণ করো",
+      "অন্যকে উৎসাহ দাও",
+      "পরিবারকে গুরুত্ব দাও",
+      "বিনয় ভঙ্গ করো না",
+      "বক্তব্যে সত্য বলো",
+      "প্রতিযোগিতার বদলে সহযোগিতা করো",
+      "নিয়ম মেনে চলো",
+      "ভাল বই পড়ো",
+      "টেকসই চিন্তা করো",
+      "সময়মতো সাহায্য করো",
+      "শরীর ও মনের যত্ন নাও",
+      "নেতৃত্ব দাও ব্যবহারে",
+      "অপেক্ষা না করে উদ্যোগ নাও",
+      "বিস্তৃত চিন্তা করো",
+      "রিস্ক বুঝে নাও",
+      "একমাত্রিক ধারণা ছেড়ো",
+      "কর্মে সৎ হও",
+      "আত্মবিশ্বাস গড়ে তোলো",
+      "আলোচনায় নম্রতা রাখো",
+      "পরস্পরের সাফল্য উদযাপন করো",
+      "প্রতিদিন লক্ষ্য পুনরায় স্মরণ করো",
+      "অপরকে সম্মান করো",
+      "আলোকে দেখো, ঈর্ষা নয়",
+      "সময় বাঁচাতে অপ্রয়োজনীয় ঝঞ্ঝাট কমাও",
+      "সব সময় শেখার মানসিকতা রাখো",
+      "দৃঢ় সিদ্ধান্ত নাও",
+      "আত্মসম্মান হারিও না",
+      "সঠিক কথার জন্য লড়াই করো",
+      "নিজের সীমা চেনো",
+      "পরিকল্পিতভাবে সঞ্চয় করো",
+      "সামাজিকতা বজায় রাখো",
+      "নৈতিকতায় অটল থাকো",
+      "সাহসিক হও—কিন্তু বিবেকবান",
+      "আলসেমি পরাজিত করো",
+      "ভালো অভ্যাসকে ধারালো করো",
+      "চোখে স্বপ্ন দেখো কিন্তু পায়ে দড়াও",
+      "বচন ঠিক রাখো",
+      "পরিবর্তনকে গ্রহন করো",
+      "শান্তভাবে সমস্যার সমাধান করো",
+      "খালি সময়ে নিজের উন্নতি করো",
+      "প্রশংসা গ্রহণ করো বিনয়ী ভঙ্গিতে",
+      "ব্যর্থতাকে শেখার সুযোগ মনে করো",
+      "জীবনের ক্ষণগুলিকে মূল্য দাও",
+      "সবার সাথে ন্যায় আচরণ করো"
+    ];
+
+    const container = document.getElementById('cards');
+
+    function render(list){
+      container.innerHTML = '';
+      list.forEach((text, idx) => {
+        const card = document.createElement('article');
+        card.className = 'card';
+        card.innerHTML = `<div class="num">${idx+1}</div><div class="text">${text}</div>`;
+        container.appendChild(card);
+      });
+    }
+
+    render(advices);
+
+    const search = document.getElementById('search');
+    search.addEventListener('input', e => {
+      const q = e.target.value.trim().toLowerCase();
+      if(!q) return render(advices);
+      const filtered = advices.filter(a => a.toLowerCase().includes(q));
+      render(filtered);
+    });
+
+    document.getElementById('reset').addEventListener('click', () => { search.value=''; render(advices); search.focus(); });
+  </script>
+</body>
+</html>
